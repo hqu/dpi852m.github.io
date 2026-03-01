@@ -170,6 +170,15 @@
       background: #fee2e2;
     }
 
+    .hint {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-weight: 700;
+    }
+
     .meta {
       margin-top: 14px;
       display: flex;
@@ -206,10 +215,11 @@
     </div>
 
     <div id="status" class="status">Start guessing!</div>
+    <div id="hint" class="hint"></div>
 
     <div class="meta">
       <div>Attempts: <span id="attempts">0</span></div>
-      <div>Range: 1 - 1,000,000</div>
+      <div>Known Range: <span id="knownRange">1 - 1,000,000</span></div>
     </div>
 
     <p class="home-link"><a href="index.html">Back to homepage</a></p>
@@ -218,12 +228,16 @@
   <script>
     let secretNumber = randomSecret();
     let attempts = 0;
+    let lowBound = 1;
+    let highBound = 1000000;
 
     const guessInput = document.getElementById("guessInput");
     const guessBtn = document.getElementById("guessBtn");
     const resetBtn = document.getElementById("resetBtn");
     const statusBox = document.getElementById("status");
+    const hintBox = document.getElementById("hint");
     const attemptsBox = document.getElementById("attempts");
+    const knownRangeBox = document.getElementById("knownRange");
 
     function randomSecret() {
       return Math.floor(Math.random() * 1000000) + 1;
@@ -235,6 +249,15 @@
       if (kind) {
         statusBox.classList.add(kind);
       }
+    }
+
+    function updateHint() {
+      const midpoint = Math.floor((lowBound + highBound) / 2);
+      knownRangeBox.textContent = lowBound.toLocaleString() + " - " + highBound.toLocaleString();
+      hintBox.textContent =
+        "Hint: Guess a number at the midpoint between the known range values (" +
+        lowBound.toLocaleString() + " and " + highBound.toLocaleString() +
+        "), so try around " + midpoint.toLocaleString() + ".";
     }
 
     function submitGuess() {
@@ -255,20 +278,27 @@
       attemptsBox.textContent = String(attempts);
 
       if (guess < secretNumber) {
+        lowBound = Math.max(lowBound, guess + 1);
         setStatus("Too low. Try a bigger number.", "warn");
       } else if (guess > secretNumber) {
+        highBound = Math.min(highBound, guess - 1);
         setStatus("Too high. Try a smaller number.", "warn");
       } else {
         setStatus("Correct! You won in " + attempts + " tries!", "good");
       }
+
+      updateHint();
     }
 
     function resetGame() {
       secretNumber = randomSecret();
       attempts = 0;
+      lowBound = 1;
+      highBound = 1000000;
       attemptsBox.textContent = "0";
       guessInput.value = "";
       setStatus("New game started. Make your first guess!", "");
+      updateHint();
       guessInput.focus();
     }
 
@@ -279,6 +309,8 @@
         submitGuess();
       }
     });
+
+    updateHint();
   </script>
 </body>
 </html>
