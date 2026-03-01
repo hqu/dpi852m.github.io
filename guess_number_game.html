@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess Number Game</title>
+  <style>
+    :root {
+      --bg-1: #ff6a3d;
+      --bg-2: #ffd23f;
+      --bg-3: #48cae4;
+      --bg-4: #7b2cbf;
+      --card: #ffffff;
+      --text: #1f2937;
+      --good: #0f9d58;
+      --warn: #c0392b;
+      --accent: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(120deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-4));
+      background-size: 300% 300%;
+      animation: shift 14s ease infinite;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    @keyframes shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.3;
+      filter: blur(4px);
+      animation: float 10s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .orb.one {
+      width: 220px;
+      height: 220px;
+      background: #ffffff;
+      top: -40px;
+      left: -40px;
+    }
+
+    .orb.two {
+      width: 280px;
+      height: 280px;
+      background: #fcd34d;
+      right: -80px;
+      bottom: -90px;
+      animation-delay: 1.2s;
+    }
+
+    .orb.three {
+      width: 180px;
+      height: 180px;
+      background: #60a5fa;
+      top: 18%;
+      right: 10%;
+      animation-delay: 2.1s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-18px) scale(1.04); }
+    }
+
+    .game-card {
+      width: min(92vw, 640px);
+      background: rgba(255, 255, 255, 0.92);
+      border: 4px solid rgba(255, 255, 255, 0.75);
+      border-radius: 24px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+      padding: 28px 24px;
+      backdrop-filter: blur(6px);
+      z-index: 1;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.1;
+      text-align: center;
+      color: #111827;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: 1.05rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"] {
+      flex: 1 1 280px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid #93c5fd;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .guess-btn {
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      color: #fff;
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #fff;
+    }
+
+    .status {
+      margin-top: 18px;
+      min-height: 56px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.08rem;
+      background: #f3f4f6;
+    }
+
+    .status.good {
+      color: var(--good);
+      background: #dcfce7;
+    }
+
+    .status.warn {
+      color: var(--warn);
+      background: #fee2e2;
+    }
+
+    .meta {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .home-link {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .home-link a {
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
+
+  <main class="game-card">
+    <h1>Guess The Number</h1>
+    <p class="subtitle">Pick a number from <strong>1</strong> to <strong>1,000,000</strong> and see if you can beat it in the fewest tries.</p>
+
+    <div class="row">
+      <input id="guessInput" type="number" min="1" max="1000000" placeholder="Enter your guess" />
+      <button class="guess-btn" id="guessBtn" type="button">Guess</button>
+      <button class="reset-btn" id="resetBtn" type="button">New Game</button>
+    </div>
+
+    <div id="status" class="status">Start guessing!</div>
+
+    <div class="meta">
+      <div>Attempts: <span id="attempts">0</span></div>
+      <div>Range: 1 - 1,000,000</div>
+    </div>
+
+    <p class="home-link"><a href="index.html">Back to homepage</a></p>
+  </main>
+
+  <script>
+    let secretNumber = randomSecret();
+    let attempts = 0;
+
+    const guessInput = document.getElementById("guessInput");
+    const guessBtn = document.getElementById("guessBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusBox = document.getElementById("status");
+    const attemptsBox = document.getElementById("attempts");
+
+    function randomSecret() {
+      return Math.floor(Math.random() * 1000000) + 1;
+    }
+
+    function setStatus(message, kind) {
+      statusBox.textContent = message;
+      statusBox.className = "status";
+      if (kind) {
+        statusBox.classList.add(kind);
+      }
+    }
+
+    function submitGuess() {
+      const value = guessInput.value.trim();
+      const guess = Number(value);
+
+      if (!Number.isInteger(guess)) {
+        setStatus("Enter a whole number.", "warn");
+        return;
+      }
+
+      if (guess < 1 || guess > 1000000) {
+        setStatus("Your guess must be between 1 and 1,000,000.", "warn");
+        return;
+      }
+
+      attempts += 1;
+      attemptsBox.textContent = String(attempts);
+
+      if (guess < secretNumber) {
+        setStatus("Too low. Try a bigger number.", "warn");
+      } else if (guess > secretNumber) {
+        setStatus("Too high. Try a smaller number.", "warn");
+      } else {
+        setStatus("Correct! You won in " + attempts + " tries!", "good");
+      }
+    }
+
+    function resetGame() {
+      secretNumber = randomSecret();
+      attempts = 0;
+      attemptsBox.textContent = "0";
+      guessInput.value = "";
+      setStatus("New game started. Make your first guess!", "");
+      guessInput.focus();
+    }
+
+    guessBtn.addEventListener("click", submitGuess);
+    resetBtn.addEventListener("click", resetGame);
+    guessInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        submitGuess();
+      }
+    });
+  </script>
+</body>
+</html>
